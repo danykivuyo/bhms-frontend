@@ -9,7 +9,9 @@ import {
   FileSpreadsheet, 
   Settings, 
   LogOut,
-  Activity
+  Activity,
+  UserPlus,
+  Users
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -21,14 +23,16 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const { logout, user } = useAuth();
 
+  // roles array controls who sees each nav item
   const navItems = [
-    { name: 'SCADA Dashboard', path: '/', icon: LayoutDashboard, roles: ['admin', 'engineer', 'viewer'] },
-    { name: 'Bridges', path: '/bridges', icon: Layers, roles: ['admin', 'engineer', 'viewer'] },
-    { name: 'IoT Devices', path: '/devices', icon: Cpu, roles: ['admin', 'engineer', 'viewer'] },
-    { name: 'Historical Logs', path: '/logs', icon: History, roles: ['admin', 'engineer', 'viewer'] },
-    { name: 'Alarms & Alerts', path: '/alerts', icon: Bell, roles: ['admin', 'engineer', 'viewer'] },
-    { name: 'PDF Reports', path: '/reports', icon: FileSpreadsheet, roles: ['admin', 'engineer', 'viewer'] },
-    { name: 'System Settings', path: '/settings', icon: Settings, roles: ['admin'] },
+    { name: 'SCADA Dashboard',  path: '/',         icon: LayoutDashboard, roles: ['admin', 'engineer', 'viewer'] },
+    { name: 'Bridges',          path: '/bridges',  icon: Layers,          roles: ['admin', 'engineer', 'viewer'] },
+    { name: 'IoT Devices',      path: '/devices',  icon: Cpu,             roles: ['admin', 'engineer', 'viewer'] },
+    { name: 'Historical Logs',  path: '/logs',     icon: History,         roles: ['admin', 'engineer', 'viewer'] },
+    { name: 'Alarms & Alerts',  path: '/alerts',   icon: Bell,            roles: ['admin', 'engineer', 'viewer'] },
+    { name: 'PDF Reports',      path: '/reports',  icon: FileSpreadsheet, roles: ['admin', 'engineer'] },
+    { name: 'System Settings',  path: '/settings', icon: Settings,        roles: ['admin'] },
+    { name: 'Register User',    path: '/register', icon: UserPlus,        roles: ['admin'] },
   ];
 
   return (
