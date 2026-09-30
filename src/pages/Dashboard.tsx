@@ -161,6 +161,23 @@ export const Dashboard: React.FC = () => {
     refetchInterval: liveMode ? 5000 : false,
   });
 
+  // Compute fixed X-axis domain based on selected time range
+  const xDomainEnd = Date.now();
+  const xDomainStart = xDomainEnd - timeRange * 60 * 60 * 1000;
+
+  // Adapt tick format: show date+time for ranges > 24h, else time only
+  const xTickFormatter = (ms: number) => {
+    const d = new Date(ms);
+    if (timeRange > 24) return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (timeRange > 1)  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  };
+
+  const xTooltipFormatter = (ms: number) => new Date(ms).toLocaleString();
+
+  // Map readings to use numeric timestamps for proper domain enforcement
+  const chartData = readings.map(r => ({ ...r, ts: new Date(r.timestamp).getTime() }));
+
   // Get current active metrics (most recent reading)
   const lastRaw = readings[readings.length - 1];
   const hasData = lastRaw !== undefined;
@@ -461,7 +478,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={readings} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorStrain" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4}/>
@@ -469,13 +486,9 @@ export const Dashboard: React.FC = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
-                <XAxis 
-                  dataKey="timestamp" 
-                  tickFormatter={(t) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} 
-                  tick={{ fontSize: 10, fill: '#64748b' }}
-                />
+                <XAxis dataKey="ts" type="number" scale="time" domain={[xDomainStart, xDomainEnd]} tickFormatter={xTickFormatter} tick={{ fontSize: 10, fill: '#64748b' }} tickCount={6} />
                 <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
-                <Tooltip />
+                <Tooltip labelFormatter={xTooltipFormatter} />
                 <Area type="monotone" dataKey="strain" stroke="#06b6d4" strokeWidth={2.5} fillOpacity={1} fill="url(#colorStrain)" name="Strain (mm)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -490,7 +503,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={readings} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorTilt" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4}/>
@@ -498,13 +511,9 @@ export const Dashboard: React.FC = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
-                <XAxis 
-                  dataKey="timestamp" 
-                  tickFormatter={(t) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} 
-                  tick={{ fontSize: 10, fill: '#64748b' }}
-                />
+                <XAxis dataKey="ts" type="number" scale="time" domain={[xDomainStart, xDomainEnd]} tickFormatter={xTickFormatter} tick={{ fontSize: 10, fill: '#64748b' }} tickCount={6} />
                 <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
-                <Tooltip />
+                <Tooltip labelFormatter={xTooltipFormatter} />
                 <Area type="monotone" dataKey="tilt" stroke="#f59e0b" strokeWidth={2.5} fillOpacity={1} fill="url(#colorTilt)" name="Tilt (Deg)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -519,7 +528,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={readings} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorVib" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4}/>
@@ -527,13 +536,9 @@ export const Dashboard: React.FC = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
-                <XAxis 
-                  dataKey="timestamp" 
-                  tickFormatter={(t) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} 
-                  tick={{ fontSize: 10, fill: '#64748b' }}
-                />
+                <XAxis dataKey="ts" type="number" scale="time" domain={[xDomainStart, xDomainEnd]} tickFormatter={xTickFormatter} tick={{ fontSize: 10, fill: '#64748b' }} tickCount={6} />
                 <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
-                <Tooltip />
+                <Tooltip labelFormatter={xTooltipFormatter} />
                 <Area type="monotone" dataKey="vibration" stroke="#f43f5e" strokeWidth={2.5} fillOpacity={1} fill="url(#colorVib)" name="Vibration (g)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -548,15 +553,11 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={readings} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
-                <XAxis 
-                  dataKey="timestamp" 
-                  tickFormatter={(t) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} 
-                  tick={{ fontSize: 10, fill: '#64748b' }}
-                />
+                <XAxis dataKey="ts" type="number" scale="time" domain={[xDomainStart, xDomainEnd]} tickFormatter={xTickFormatter} tick={{ fontSize: 10, fill: '#64748b' }} tickCount={6} />
                 <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
-                <Tooltip />
+                <Tooltip labelFormatter={xTooltipFormatter} />
                 <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
                 <Line type="monotone" dataKey="strain" stroke="#06b6d4" strokeWidth={2} dot={false} name="Strain (mm)" />
                 <Line type="monotone" dataKey="tilt" stroke="#f59e0b" strokeWidth={2} dot={false} name="Tilt (Deg)" />
