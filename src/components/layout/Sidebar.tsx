@@ -11,7 +11,6 @@ import {
   LogOut,
   Activity,
   UserPlus,
-  Users
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 

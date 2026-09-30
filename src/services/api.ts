@@ -5,7 +5,7 @@ import axios from 'axios';
 // frontend is hosted. Examples:
 //   Local XAMPP:  'http://localhost/bhms/api'
 //   cPanel:       'https://yourdomain.com/api'
-const API_BASE_URL = 'http://localhost/bhms/api';
+const API_BASE_URL = 'https://bhms.droid.co.tz/api';
 
 const getBaseURL = () => API_BASE_URL;
 

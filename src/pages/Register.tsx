@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
-import { UserPlus, ShieldCheck, Mail, User, Lock, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { UserPlus, Mail, User, Lock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -19,7 +19,7 @@ export const Register: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await api.post('/auth/register', { username, email, password, role });
+      await api.post('/auth/register', { username, email, password, role });
       setSuccess(`User "${username}" registered successfully as ${role}.`);
       setUsername('');
       setEmail('');

@@ -5,16 +5,13 @@ import { useAuth } from '../hooks/useAuth';
 import {
   AlertTriangle,
   CheckCircle2,
-  Bell,
-  Layers,
-  Cpu,
-  ChevronLeft,
-  ChevronRight,
-  Filter,
   ShieldAlert,
   ShieldCheck,
   Clock,
   X,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
 } from 'lucide-react';
 
 interface Alert {

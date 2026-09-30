@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  Activity, 
   Cpu, 
-  Database, 
-  AlertOctagon, 
-  Calendar, 
   Layers, 
-  TrendingUp, 
   Play, 
   Pause,
-  RefreshCw
+  RefreshCw,
+  Clock
 } from 'lucide-react';
 import { api } from '../services/api';
 import { 
@@ -71,10 +67,11 @@ interface Thresholds {
 
 export const Dashboard: React.FC = () => {
   // Filter and Polling States
-  const [selectedBridge, setSelectedBridge] = useState<string>('1'); // Default to GGB (Bridge 1)
+  const [selectedBridge, setSelectedBridge] = useState<string>('');
   const [selectedDevice, setSelectedDevice] = useState<string>('all');
   const [liveMode, setLiveMode] = useState<boolean>(true);
-  const [limit, setLimit] = useState<number>(50);
+  const [timeRange, setTimeRange] = useState<number>(1);
+  const [limit] = useState<number>(500);
 
   // Lists
   const [bridges, setBridges] = useState<Bridge[]>([]);
@@ -96,7 +93,12 @@ export const Dashboard: React.FC = () => {
       try {
         const resBridges = await api.get('/bridges');
         if (resBridges.data.status === 'success') {
-          setBridges(resBridges.data.data);
+          const bridgeList: Bridge[] = resBridges.data.data;
+          setBridges(bridgeList);
+          // Auto-select the first bridge so the trends query fires immediately
+          if (bridgeList.length > 0) {
+            setSelectedBridge(String(bridgeList[0].id));
+          }
         }
         const resDevices = await api.get('/devices');
         if (resDevices.data.status === 'success') {
@@ -136,9 +138,9 @@ export const Dashboard: React.FC = () => {
 
   // Query: Time-series readings for trends and gauges
   const { data: readings = [], refetch: refetchReadings } = useQuery<Reading[]>({
-    queryKey: ['dashboard-trends', selectedBridge, selectedDevice, limit],
+    queryKey: ['dashboard-trends', selectedBridge, selectedDevice, limit, timeRange],
     queryFn: async () => {
-      const params: any = { limit };
+      const params: any = { limit, hours: timeRange };
       if (selectedBridge && selectedBridge !== 'all') {
         params.bridge_id = selectedBridge;
       }
@@ -159,26 +161,37 @@ export const Dashboard: React.FC = () => {
     refetchInterval: liveMode ? 5000 : false,
   });
 
-  // Get current active metrics (most recent reading) — always numbers
+  // Get current active metrics (most recent reading)
   const lastRaw = readings[readings.length - 1];
+  const hasData = lastRaw !== undefined;
   const currentReading = {
-    strain: parseFloat(lastRaw?.strain as any) || 0,
-    tilt: parseFloat(lastRaw?.tilt as any) || 0,
-    vibration: parseFloat(lastRaw?.vibration as any) || 0,
-    battery_level: parseFloat(lastRaw?.battery_level as any) || 0,
-    signal_strength: parseInt(lastRaw?.signal_strength as any) || 0,
+    strain: hasData ? parseFloat(lastRaw.strain as any) : null,
+    tilt: hasData ? parseFloat(lastRaw.tilt as any) : null,
+    vibration: hasData ? parseFloat(lastRaw.vibration as any) : null,
+    battery_level: hasData ? parseFloat(lastRaw.battery_level as any) : null,
+    signal_strength: hasData ? parseInt(lastRaw.signal_strength as any) : null,
     timestamp: lastRaw?.timestamp ?? new Date().toISOString(),
   };
 
+  // Helper: placeholder when no readings have arrived yet
+  const GaugePlaceholder: React.FC<{ label: string; units: string }> = ({ label, units }) => (
+    <div className="glass-panel border border-slate-200/50 dark:border-industrial-800/80 rounded-xl p-5 flex flex-col items-center justify-center text-center gap-3">
+      <span className="text-xs uppercase font-mono tracking-wider font-bold text-slate-500 dark:text-slate-400">{label} Monitor</span>
+      <div className="w-32 h-32 rounded-full border-[10px] border-slate-200 dark:border-industrial-800 flex items-center justify-center">
+        <span className="text-[10px] font-mono text-slate-400 uppercase">No Data</span>
+      </div>
+      <span className="text-[10px] font-mono text-slate-400 uppercase">{units}</span>
+    </div>
+  );
+
   // Helper: circular SVG indicator calculations
   const renderCircularGauge = (
-    label: string, 
-    value: number, 
-    units: string, 
-    warningThresh: number, 
+    label: string,
+    value: number,
+    units: string,
+    warningThresh: number,
     criticalThresh: number,
-    maxValue: number,
-    pulseClass: string
+    maxValue: number
   ) => {
     // Map value to percent of maximum expected gauge scale
     const percentage = Math.min(100, Math.max(0, (value / maxValue) * 100));
@@ -188,18 +201,15 @@ export const Dashboard: React.FC = () => {
 
     // Determine status color based on thresholds
     let colorClass = 'text-cyan-500 stroke-cyan-500';
-    let ringBg = 'bg-cyan-500/10 dark:bg-cyan-500/20';
     let labelBg = 'bg-cyan-500/20 dark:bg-cyan-500/30 text-cyan-600 dark:text-cyan-400';
     let alertLabel = 'NORMAL';
 
     if (value >= criticalThresh) {
       colorClass = 'text-rose-500 stroke-rose-500 animate-pulse';
-      ringBg = 'bg-rose-500/15 dark:bg-rose-500/25';
       labelBg = 'bg-rose-500/25 dark:bg-rose-500/35 text-rose-600 dark:text-rose-400 font-extrabold';
       alertLabel = 'CRITICAL ALARM';
     } else if (value >= warningThresh) {
       colorClass = 'text-amber-500 stroke-amber-500';
-      ringBg = 'bg-amber-500/15 dark:bg-amber-500/25';
       labelBg = 'bg-amber-500/25 dark:bg-amber-500/35 text-amber-600 dark:text-amber-400';
       alertLabel = 'WARNING';
     }
@@ -320,6 +330,24 @@ export const Dashboard: React.FC = () => {
             </select>
           </div>
 
+          {/* Time Range Selector */}
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-slate-400" />
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(Number(e.target.value))}
+              className="bg-white dark:bg-industrial-900 border border-slate-200 dark:border-industrial-800 text-sm rounded-lg px-3 py-2 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-cyan-500"
+            >
+              <option value={1}>Last 1 Hour</option>
+              <option value={3}>Last 3 Hours</option>
+              <option value={6}>Last 6 Hours</option>
+              <option value={12}>Last 12 Hours</option>
+              <option value={24}>Last 24 Hours</option>
+              <option value={48}>Last 48 Hours</option>
+              <option value={168}>Last 7 Days</option>
+            </select>
+          </div>
+
           {/* Live Updating Link Button */}
           <button
             onClick={() => setLiveMode(!liveMode)}
@@ -409,38 +437,17 @@ export const Dashboard: React.FC = () => {
 
       {/* 3. Live Monitoring circular gauges */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Strain Gauge (Max expected scale: 1.5mm) */}
-        {renderCircularGauge(
-          'Strain (Stretch)', 
-          currentReading.strain, 
-          'mm', 
-          thresholds.strain_warning_threshold, 
-          thresholds.strain_critical_threshold,
-          1.5,
-          'animate-pulse-cyan'
-        )}
+        {currentReading.strain === null
+          ? <GaugePlaceholder label="Strain (Stretch)" units="mm" />
+          : renderCircularGauge('Strain (Stretch)', currentReading.strain, 'mm', thresholds.strain_warning_threshold, thresholds.strain_critical_threshold, 1.5)}
 
-        {/* Tilt Gauge (Max expected scale: 3.0 degrees) */}
-        {renderCircularGauge(
-          'Tilt (Rotation)', 
-          currentReading.tilt, 
-          'deg', 
-          thresholds.tilt_warning_threshold, 
-          thresholds.tilt_critical_threshold,
-          3.0,
-          'animate-pulse-amber'
-        )}
+        {currentReading.tilt === null
+          ? <GaugePlaceholder label="Tilt (Rotation)" units="deg" />
+          : renderCircularGauge('Tilt (Rotation)', currentReading.tilt, 'deg', thresholds.tilt_warning_threshold, thresholds.tilt_critical_threshold, 3.0)}
 
-        {/* Vibration Gauge (Max expected scale: 0.5g) */}
-        {renderCircularGauge(
-          'Vibration (Accel)', 
-          currentReading.vibration, 
-          'g', 
-          thresholds.vibration_warning_threshold, 
-          thresholds.vibration_critical_threshold,
-          0.5,
-          'animate-pulse-rose'
-        )}
+        {currentReading.vibration === null
+          ? <GaugePlaceholder label="Vibration (Accel)" units="g" />
+          : renderCircularGauge('Vibration (Accel)', currentReading.vibration, 'g', thresholds.vibration_warning_threshold, thresholds.vibration_critical_threshold, 0.5)}
       </div>
 
       {/* 4. Real-Time Charts with Recharts */}

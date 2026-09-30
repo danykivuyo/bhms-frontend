@@ -8,12 +8,10 @@ import {
   Cpu, 
   ChevronLeft, 
   ChevronRight, 
-  Download, 
   FileJson, 
   FileSpreadsheet, 
   FileText,
-  ArrowUpDown,
-  Filter
+  ArrowUpDown
 } from 'lucide-react';
 
 interface Reading {

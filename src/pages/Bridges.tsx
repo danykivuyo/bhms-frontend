@@ -59,7 +59,7 @@ export const Bridges: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
 
   // Query: Fetch all bridges
-  const { data: bridges = [], isLoading, error } = useQuery<Bridge[]>({
+  const { data: bridges = [], isLoading } = useQuery<Bridge[]>({
     queryKey: ['bridges-list'],
     queryFn: async () => {
       const res = await api.get('/bridges');
