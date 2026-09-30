@@ -11,6 +11,7 @@ import {
   LogOut,
   Activity,
   UserPlus,
+  BatteryMedium,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -27,6 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     { name: 'SCADA Dashboard',  path: '/',         icon: LayoutDashboard, roles: ['admin', 'engineer', 'viewer'] },
     { name: 'Bridges',          path: '/bridges',  icon: Layers,          roles: ['admin', 'engineer', 'viewer'] },
     { name: 'IoT Devices',      path: '/devices',  icon: Cpu,             roles: ['admin', 'engineer', 'viewer'] },
+    { name: 'Battery Monitor',  path: '/battery',  icon: BatteryMedium,   roles: ['admin', 'engineer', 'viewer'] },
     { name: 'Historical Logs',  path: '/logs',     icon: History,         roles: ['admin', 'engineer', 'viewer'] },
     { name: 'Alarms & Alerts',  path: '/alerts',   icon: Bell,            roles: ['admin', 'engineer', 'viewer'] },
     { name: 'PDF Reports',      path: '/reports',  icon: FileSpreadsheet, roles: ['admin', 'engineer'] },
