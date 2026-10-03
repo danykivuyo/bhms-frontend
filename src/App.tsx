@@ -17,6 +17,7 @@ import Alerts from './pages/Alerts';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import BatteryMonitor from './pages/BatteryMonitor';
+import Firmware from './pages/Firmware';
 
 // Protected route wrapper with role enforcement
 const ProtectedRoute: React.FC<{
@@ -86,6 +87,7 @@ const App: React.FC = () => {
       <Route path="/reports" element={<ProtectedRoute roles={['admin','engineer']}><Layout><Reports /></Layout></ProtectedRoute>} />
       {/* Admin only: Settings & Register */}
       <Route path="/settings" element={<ProtectedRoute roles={['admin']}><Layout><Settings /></Layout></ProtectedRoute>} />
+      <Route path="/firmware" element={<ProtectedRoute roles={['admin']}><Layout><Firmware /></Layout></ProtectedRoute>} />
       <Route path="/register" element={<ProtectedRoute roles={['admin']}><Layout><Register /></Layout></ProtectedRoute>} />
 
       {/* Fallback */}

@@ -12,6 +12,7 @@ import {
   Activity,
   UserPlus,
   BatteryMedium,
+  Download,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -33,6 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     { name: 'Alarms & Alerts',  path: '/alerts',   icon: Bell,            roles: ['admin', 'engineer', 'viewer'] },
     { name: 'PDF Reports',      path: '/reports',  icon: FileSpreadsheet, roles: ['admin', 'engineer'] },
     { name: 'System Settings',  path: '/settings', icon: Settings,        roles: ['admin'] },
+    { name: 'Firmware Releases', path: '/firmware', icon: Download,       roles: ['admin'] },
     { name: 'Register User',    path: '/register', icon: UserPlus,        roles: ['admin'] },
   ];
 

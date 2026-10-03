@@ -235,7 +235,7 @@ export const BatteryMonitor: React.FC = () => {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
                       <XAxis dataKey="ts" type="number" scale="time"
-                        domain={[xDomainStart, xDomainEnd]}
+                        domain={[xDomainStart, xDomainEnd]} allowDataOverflow
                         tickFormatter={xTickFmt} tick={{ fontSize: 10, fill: '#64748b' }} tickCount={5} />
                       <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#64748b' }} unit="%" />
                       <Tooltip labelFormatter={xTipFmt} formatter={(v: any) => [`${Number(v).toFixed(1)}%`, 'Battery']} />
@@ -270,7 +270,7 @@ export const BatteryMonitor: React.FC = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
                 <XAxis dataKey="ts" type="number" scale="time"
-                  domain={[xDomainStart, xDomainEnd]}
+                  domain={[xDomainStart, xDomainEnd]} allowDataOverflow
                   tickFormatter={xTickFmt} tick={{ fontSize: 10, fill: '#64748b' }} tickCount={6} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#64748b' }} unit="%" />
                 <Tooltip labelFormatter={xTipFmt} formatter={(v: any, name: string) => [`${Number(v).toFixed(1)}%`, deviceName(name)]} />
